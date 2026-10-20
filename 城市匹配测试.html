@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f5f1">
+<title>你适合在哪座城市生活？· 城市气质测试</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{
+    --ink:#1c1c1a; --ink-2:#3d3d3a; --muted:#78776f; --faint:#a3a29a;
+    --bg:#f7f5f1; --card:#fff; --accent:#1f4b3f; --accent-2:#2f6b59;
+    --accent-soft:#e9f0eb; --line:rgba(28,28,26,.09); --line-2:rgba(28,28,26,.16);
+  }
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif;
+    font-size:16px; line-height:1.65; -webkit-font-smoothing:antialiased;
+    min-height:100dvh; display:flex; justify-content:center;
+  }
+  #app{width:100%; max-width:520px; padding:0 22px calc(28px + env(safe-area-inset-bottom)); display:flex; flex-direction:column}
+  .screen{display:none; flex:1; flex-direction:column}
+  .screen.on{display:flex}
+
+  /* ---------- 开始页 ---------- */
+  .brand{display:flex; align-items:center; gap:8px; padding:26px 0 0; font-size:12px; letter-spacing:.14em; color:var(--faint)}
+  .brand i{display:inline-block; width:16px; height:1.5px; background:var(--accent); opacity:.55}
+  .hero{padding:52px 0 0}
+  .hero h1{font-size:34px; line-height:1.28; font-weight:600; letter-spacing:-.02em; margin:0 0 18px}
+  .hero p{font-size:15px; color:var(--muted); margin:0; max-width:19em}
+  .sky{margin:34px 0 14px}
+  .meta{display:flex; gap:14px; font-size:12.5px; color:var(--faint); flex-wrap:wrap}
+  .meta span{display:flex; align-items:center; gap:5px}
+  .meta b{width:3px; height:3px; border-radius:50%; background:var(--faint); display:inline-block}
+  .cta{
+    margin-top:auto; padding-top:34px;
+  }
+  button.primary{
+    width:100%; border:0; border-radius:14px; background:var(--accent); color:#fff;
+    font-size:16.5px; font-weight:500; padding:17px; font-family:inherit; cursor:pointer;
+    letter-spacing:.02em; transition:transform .12s ease, background .2s;
+  }
+  button.primary:active{transform:scale(.985); background:var(--accent-2)}
+  .foot{font-size:11.5px; color:var(--faint); line-height:1.7; margin-top:16px; text-align:center}
+
+  /* ---------- 答题页 ---------- */
+  .qtop{display:flex; align-items:center; justify-content:space-between; padding:26px 0 0; font-size:12.5px; color:var(--faint)}
+  .qtop .num b{color:var(--accent); font-weight:600; font-size:14px}
+  .back{border:0; background:none; color:var(--faint); font-size:13px; font-family:inherit; cursor:pointer; padding:6px 0}
+  .bar{height:2px; background:var(--line); border-radius:2px; margin:12px 0 0; overflow:hidden}
+  .bar i{display:block; height:100%; width:0; background:var(--accent); border-radius:2px; transition:width .32s cubic-bezier(.4,0,.2,1)}
+  .qbody{padding:40px 0 0}
+  .qbody h2{font-size:22px; line-height:1.5; font-weight:600; letter-spacing:-.01em; margin:0 0 30px}
+  .opts{display:flex; flex-direction:column; gap:10px}
+  .opt{
+    display:flex; align-items:flex-start; gap:13px; text-align:left; width:100%;
+    background:var(--card); border:1px solid var(--line); border-radius:13px;
+    padding:15px 16px; font-size:15px; line-height:1.5; color:var(--ink-2);
+    font-family:inherit; cursor:pointer; transition:border-color .16s, background .16s, transform .1s;
+  }
+  .opt:active{transform:scale(.99)}
+  .opt .k{
+    flex:0 0 21px; height:21px; border-radius:50%; border:1px solid var(--line-2);
+    display:flex; align-items:center; justify-content:center;
+    font-size:11.5px; color:var(--faint); margin-top:1px; transition:all .16s;
+  }
+  .opt.sel{border-color:var(--accent); background:var(--accent-soft)}
+  .opt.sel .k{background:var(--accent); border-color:var(--accent); color:#fff}
+
+  /* ---------- 结果页 ---------- */
+  .rhead{padding:36px 0 0}
+  .rlabel{font-size:11.5px; letter-spacing:.16em; color:var(--faint); margin-bottom:14px}
+  .rscore{display:flex; align-items:baseline; gap:8px; margin-bottom:6px}
+  .rscore b{font-size:52px; font-weight:600; letter-spacing:-.03em; line-height:1; color:var(--accent)}
+  .rscore span{font-size:14px; color:var(--muted)}
+  .rcity{font-size:31px; font-weight:600; letter-spacing:-.02em; margin:8px 0 6px}
+  .rtag{font-size:15px; color:var(--muted)}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; margin-top:18px}
+  .card h3{font-size:13px; letter-spacing:.1em; color:var(--faint); font-weight:500; margin:0 0 14px}
+  .why{display:flex; flex-direction:column; gap:13px}
+  .why div{font-size:14.5px; line-height:1.62; color:var(--ink-2); padding-left:13px; position:relative}
+  .why div:before{content:""; position:absolute; left:0; top:.62em; width:5px; height:5px; border-radius:50%; background:var(--accent); opacity:.4}
+  .radar{display:flex; justify-content:center; padding:4px 0 0}
+  .alt{display:flex; gap:10px; margin-top:2px}
+  .alt .item{flex:1; min-width:0; background:var(--bg); border-radius:12px; padding:13px 14px}
+  .alt .item b{display:block; font-size:16px; font-weight:600; margin-bottom:3px}
+  .alt .item span{font-size:12px; color:var(--muted); line-height:1.5; display:block}
+  .alt .item em{font-style:normal; font-size:11.5px; color:var(--accent); display:block; margin-top:6px}
+  .warn{background:#fdf6ec; border:1px solid #f0e0c4; border-radius:16px; padding:20px; margin-top:18px}
+  .warn h3{color:#9a7434}
+  .warn p{font-size:14.5px; line-height:1.62; color:#6b5636; margin:0}
+  .acts{counter-reset:a; display:flex; flex-direction:column; gap:12px}
+  .acts div{font-size:14.5px; line-height:1.6; color:var(--ink-2); padding-left:26px; position:relative}
+  .acts div:before{
+    counter-increment:a; content:counter(a);
+    position:absolute; left:0; top:.18em; width:17px; height:17px; border-radius:50%;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:10.5px; display:flex; align-items:center; justify-content:center; font-weight:600;
+  }
+  .disc{font-size:11.5px; color:var(--faint); line-height:1.75; margin-top:22px}
+  .ractions{display:flex; gap:10px; margin-top:22px}
+  .ractions button{
+    flex:1; padding:14px; border-radius:12px; font-size:14.5px; font-family:inherit; cursor:pointer;
+    border:1px solid var(--line-2); background:transparent; color:var(--ink-2);
+  }
+  .ractions button.solid{background:var(--accent); border-color:var(--accent); color:#fff}
+  .fade{animation:fade .38s ease both}
+  @keyframes fade{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
+  @media (max-width:360px){
+    .hero h1{font-size:29px}
+    .qbody h2{font-size:20px}
+    .rcity{font-size:27px}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 开始页 -->
+  <section class="screen on" id="s-start">
+    <div class="brand"><i></i>城市气质测试</div>
+    <div class="hero">
+      <h1>你适合在哪座<br>城市生活？</h1>
+      <p>不是问你想去哪。是问——你能在哪待得住。</p>
+    </div>
+    <svg class="sky" width="100%" height="72" viewBox="0 0 460 72" fill="none" aria-hidden="true">
+      <path d="M0 72V50h18v-9h14v9h9V33h16v17h11V41h20v9h13V28h15v50" stroke="#c9c6bc" stroke-width="1.2" fill="none"/>
+      <path d="M130 72V44h22V30h5v14h12v28" stroke="#c9c6bc" stroke-width="1.2" fill="none"/>
+      <path d="M190 72V38h26v-8h9v42" stroke="#b9b6ab" stroke-width="1.2" fill="none"/>
+      <path d="M240 72V54h13V43h11v29" stroke="#b9b6ab" stroke-width="1.2" fill="none"/>
+      <path d="M282 72V36h17v-11h11v47" stroke="#c9c6bc" stroke-width="1.2" fill="none"/>
+      <path d="M330 72V52h24v-7h13v27" stroke="#c9c6bc" stroke-width="1.2" fill="none"/>
+      <path d="M382 72V46h19V31h8v41" stroke="#b9b6ab" stroke-width="1.2" fill="none"/>
+      <path d="M424 72V56h18v-9h18v25" stroke="#c9c6bc" stroke-width="1.2" fill="none"/>
+      <line x1="0" y1="71.5" x2="460" y2="71.5" stroke="#b9b6ab" stroke-width="1.2"/>
+    </svg>
+    <div class="meta">
+      <span>20 道题</span><span><b></b></span>
+      <span>约 4 分钟</span>
+    </div>
+    <div class="cta">
+      <button class="primary" id="btn-start">开始测试</button>
+      <p class="foot">纯趣味自测，不是科学测评<br>不收集任何信息，结果只在你手机上算出来</p>
+    </div>
+  </section>
+
+  <!-- 答题页 -->
+  <section class="screen" id="s-quiz">
+    <div class="qtop">
+      <span class="num"><b id="q-cur">1</b> / <span id="q-total">20</span></span>
+      <button class="back" id="btn-back">返回</button>
+    </div>
+    <div class="bar"><i id="q-bar"></i></div>
+    <div class="qbody">
+      <h2 id="q-title"></h2>
+      <div class="opts" id="q-opts"></div>
+    </div>
+  </section>
+
+  <!-- 结果页 -->
+  <section class="screen" id="s-result"></section>
+
+</div>
+
+<script>
+/* =========================================================================
+   配置区 —— 换主题只改这里。
+   DIMS: 维度键；QUESTIONS: 题目与选项计分（-2..+2）；
+   PROFILES: 匹配对象（这里是城市）的六维画像。
+   ========================================================================= */
+
+const DIMS = ['pace', 'climate', 'scale', 'culture', 'career', 'cost'];
+
+const DIM_META = {
+  pace:    { label: '节奏',  hi: '你靠密度和推力活着，安静会让你发慌', lo: '你的能量是省着用的，热闹在消耗你' },
+  climate: { label: '气候',  hi: '冷对你不只是天气问题，它直接改你的心情', lo: '潮湿闷热比干冷更难受，你需要能喘口气的空气' },
+  scale:   { label: '规模',  hi: '你需要规模，需要“还有更多可能”的感觉', lo: '你需要熟人社会，需要抬头能认出人的街道' },
+  culture: { label: '氛围',  hi: '你愿意为“有意思”买单，哪怕它没什么用', lo: '你更信具体的生活，不太信概念和氛围' },
+  career:  { label: '事业',  hi: '你的自我价值很大一部分挂在“做成事”上', lo: '你不打算用工作来定义自己' },
+  cost:    { label: '成本',  hi: '你愿意为位置和体验多付钱，省下来的时间更值钱', lo: '性价比是你安全感的一部分，账算不平你睡不着' }
+};
+
+const DIM_PHRASE = {
+  pace:    { hi: '持续的推力', lo: '可支配的空白' },
+  climate: { hi: '温和湿润', lo: '干爽分明' },
+  scale:   { hi: '更大的池子', lo: '更近的关系' },
+  culture: { hi: '看得见的新鲜事', lo: '摸得着的日常' },
+  career:  { hi: '往上走的空间', lo: '下班就下班' },
+  cost:    { hi: '为体验付溢价', lo: '把账算平' }
+};
+
+const QUESTIONS = [
+  { t: '周六早上八点，你被窗外的声音吵醒。你希望那是什么声音？',
+    options: [
+      { t: '楼下菜市场的讨价还价', s: { culture: -2, pace: -1 } },
+      { t: '环卫车和早高峰的车流', s: { pace: 2, climate: -1 } },
+      { t: '鸟叫，和隔壁阳台晾衣服的动静', s: { pace: -1, scale: -2 } },
+      { t: '什么都听不见，隔音很好', s: { cost: 2, scale: 1 } }
+    ]},
+
+  { t: '一份薪水高 30%、但要每天干到十点的工作，你会',
+    options: [
+      { t: '干，钱最重要', s: { career: 2, pace: 1 } },
+      { t: '干两年攒钱，然后跑', s: { career: 1, cost: -1 } },
+      { t: '不干，晚上是我自己的', s: { pace: -2, career: -2 } },
+      { t: '先看这座城市值不值得我熬', s: { culture: 1, career: 1 } }
+    ]},
+
+  { t: '通勤这件事，你能接受的上限是',
+    options: [
+      { t: '20 分钟内，走路或骑车', s: { pace: -1, scale: -2 } },
+      { t: '40 分钟，地铁上正好看完一章书', s: { scale: 1 } },
+      { t: '一小时也行，只要住得舒服', s: { cost: -1, scale: 1 } },
+      { t: '我宁愿多花钱住近点', s: { cost: 2, pace: 1 } }
+    ]},
+
+  { t: '冬天你最受不了的是',
+    options: [
+      { t: '湿冷，渗进骨头那种', s: { climate: 2 } },
+      { t: '干冷，脸上起皮那种', s: { climate: -2 } },
+      { t: '阴天太久，见不到太阳', s: { pace: -1 } },
+      { t: '我不怕冷，我怕热', s: { climate: -2, cost: -1 } }
+    ]},
+
+  { t: '朋友约你周末出门，你脑子里第一个念头是',
+    options: [
+      { t: '去哪吃', s: { culture: -2, pace: -1 } },
+      { t: '有没有新开的展或店', s: { culture: 2 } },
+      { t: '别太远，最好走路能到', s: { scale: -2 } },
+      { t: '人多吗，人多我就不去了', s: { scale: -1, culture: 1 } }
+    ]},
+
+  { t: '“排队两小时吃一家网红店”，你的态度是',
+    options: [
+      { t: '值得，我就是要这个体验', s: { culture: 2, cost: 2, pace: 1 } },
+      { t: '排半小时可以，两小时算了', s: { cost: -1 } },
+      { t: '我更愿意去那家开了二十年的老店', s: { culture: -2, cost: -1 } },
+      { t: '我不太在外面吃', s: { cost: -2 } }
+    ]},
+
+  { t: '房租占你税后收入多少，你觉得还能接受',
+    options: [
+      { t: '15% 以内，剩下的钱我要存下来', s: { cost: -2 } },
+      { t: '25% 左右，住得舒服重要', s: { cost: 1 } },
+      { t: '35%，位置和品质值这个价', s: { cost: 2, scale: 1 } },
+      { t: '40% 以上也行，我大部分时间在外面', s: { cost: 2, pace: 1 } }
+    ]},
+
+  { t: '你更想住在什么样的地方',
+    options: [
+      { t: '老城区，下楼就是生活', s: { culture: -2, pace: -1 } },
+      { t: '新城区，路宽、楼新、有规划', s: { scale: 1, pace: 1 } },
+      { t: '山边或水边，愿意为此通勤', s: { culture: 1, cost: 1, climate: 1 } },
+      { t: '市中心，什么都近', s: { pace: 2, scale: 2 } }
+    ]},
+
+  { t: '一场你很想去的小众展览，和工作汇报撞在同一天',
+    options: [
+      { t: '改汇报时间，先去看展', s: { culture: 2, career: -1 } },
+      { t: '先去汇报，晚上赶过去', s: { career: 2, pace: 1 } },
+      { t: '算了，下次', s: { career: 1, culture: -1 } },
+      { t: '我根本不会去看这种展', s: { culture: -2 } }
+    ]},
+
+  { t: '一个人待在一座没有熟人的城市，你的感受是',
+    options: [
+      { t: '挺好，我本来也不爱社交', s: { scale: 1 } },
+      { t: '会孤独，我需要能随时约出来的人', s: { scale: -2, pace: -1 } },
+      { t: '看有没有事做，忙起来就不孤单', s: { career: 1, pace: 1 } },
+      { t: '这就是我想要的重新开始', s: { career: 1, culture: 1 } }
+    ]},
+
+  { t: '你更希望你的城市有',
+    options: [
+      { t: '干净的地铁和一流的医院', s: { scale: 2, cost: 1 } },
+      { t: '每年能去几次的音乐节和展览', s: { culture: 2 } },
+      { t: '周末两小时能到的山或海', s: { culture: 1, pace: -1, career: -1, climate: 1 } },
+      { t: '一个不用抢号的菜市场，和便宜的水果', s: { cost: -2, culture: -2 } }
+    ]},
+
+  { t: '如果明天不用上班，你会',
+    options: [
+      { t: '睡到自然醒，然后找家咖啡店坐着', s: { pace: -2, culture: 1 } },
+      { t: '出门暴走一整天，把城市逛一遍', s: { pace: 1, scale: 1 } },
+      { t: '去公园坐着，看人来人往', s: { pace: -2, culture: -2, climate: 1 } },
+      { t: '在家把攒着的事做完', s: { career: 1, scale: -1 } }
+    ]},
+
+  { t: '“小城市靠人情，大城市靠规则”，你更认同',
+    options: [
+      { t: '人情我受不了，我宁愿冷漠一点', s: { scale: 1 } },
+      { t: '人情挺好的，出事了有人帮', s: { scale: -2 } },
+      { t: '都能接受，看哪个给的钱多', s: { career: 1, cost: -1 } },
+      { t: '我无所谓，我只想清静', s: { pace: -1, scale: -1, career: -1 } }
+    ]},
+
+  { t: '你对下雨天的感受是',
+    options: [
+      { t: '挺好，听着雨声睡觉', s: { climate: 2, pace: -1 } },
+      { t: '烦，出门全是泥', s: { climate: -1 } },
+      { t: '只要不连下一个月就行', s: {} },
+      { t: '我喜欢雪，不喜欢雨', s: { climate: -2 } }
+    ]},
+
+  { t: '一件天天穿的外套，你的预算大概是',
+    options: [
+      { t: '两百以内，能穿就行', s: { cost: -2 } },
+      { t: '五百左右，看设计和版型', s: { culture: 1 } },
+      { t: '一千以上，穿三年', s: { cost: 2, culture: 1 } },
+      { t: '看它值不值，不看价格', s: { cost: 2 } }
+    ]},
+
+  { t: '你理想中的居住半径是',
+    options: [
+      { t: '三公里内解决所有生活', s: { scale: -1, pace: -1 } },
+      { t: '地铁半小时能到任何地方', s: { scale: 2, pace: 1 } },
+      { t: '有车，愿意住远一点换空间', s: { cost: -1, scale: 1 } },
+      { t: '走路十五分钟到公司', s: { pace: 1, cost: 1 } }
+    ]},
+
+  { t: '“发展机会”和“生活质量”，如果只能选一个',
+    options: [
+      { t: '机会，我现在需要往上走', s: { career: 2 } },
+      { t: '生活质量，我不想再卷了', s: { pace: -1, career: -2 } },
+      { t: '先要机会，攒够了再要生活', s: { career: 1, cost: -1 } },
+      { t: '生活质量本身就是一种机会', s: { pace: -1, culture: 1 } }
+    ]},
+
+  { t: '你怎么看“周末去周边城市玩两天”',
+    options: [
+      { t: '经常去，这是我的必需品', s: { culture: 1, cost: 1, pace: 1 } },
+      { t: '一年几次，主要是陪朋友', s: { culture: -1, cost: -1 } },
+      { t: '我更愿意在家躺着', s: { pace: -2, cost: -1 } },
+      { t: '我更喜欢去很远的地方，一次玩够', s: { culture: 2, cost: 2, career: -1 } }
+    ]},
+
+  { t: '五年后，你希望自己的生活是',
+    options: [
+      { t: '在一座我喜欢的城市，有一套自己的房子', s: { cost: -1, pace: -1 } },
+      { t: '在行业里做到一个位置，城市不太重要', s: { career: 2 } },
+      { t: '有一份能远程的工作，人在哪都行', s: { pace: -1, scale: -1, career: -1 } },
+      { t: '还在折腾，试不同的活法', s: { culture: 1, career: 1 } }
+    ]},
+
+  { t: '如果现在让你搬去一座陌生城市，你最担心',
+    options: [
+      { t: '找不到合适的工作', s: { career: 2 } },
+      { t: '生活成本太高，存不下钱', s: { cost: -2 } },
+      { t: '融不进去，交不到朋友', s: { scale: -2, culture: -1, career: -1 } },
+      { t: '其实没什么好担心的，我适应力还行', s: { scale: 1, pace: 1 } }
+    ]}
+];
+
+const CITIES = [
+  { name:'成都', tag:'慢得有理由，热闹得很具体',
+    v:{ pace:32, climate:68, scale:76, culture:52, career:54, cost:28 },
+    desc:'节奏松，生活密度高，茶馆和火锅是日常。阴天多、日照少，但城市本身很给情绪价值。' },
+  { name:'杭州', tag:'被自然包着的效率城市',
+    v:{ pace:62, climate:66, scale:70, culture:78, career:72, cost:70 },
+    desc:'互联网和设计产业密集，城市界面干净。有山有水，但梅雨和房价都不客气。' },
+  { name:'上海', tag:'把效率和审美同时做到极致',
+    v:{ pace:92, climate:60, scale:94, culture:88, career:90, cost:88 },
+    desc:'规则清楚、资源密集、边界感强。你能得到很多，代价是每一分都要自己挣。' },
+  { name:'北京', tag:'资源最厚，代价最实在',
+    v:{ pace:86, climate:26, scale:94, culture:84, career:92, cost:76 },
+    desc:'文化、教育、产业资源都在这儿。干燥、冬天冷、通勤长，是必须接受的交换条件。' },
+  { name:'深圳', tag:'没有历史包袱，只有往前冲',
+    v:{ pace:90, climate:84, scale:86, culture:54, career:95, cost:76 },
+    desc:'移民城市，谁也不问你从哪来。公园和海很多，加班也多。' },
+  { name:'广州', tag:'把日子过实在了再说别的',
+    v:{ pace:74, climate:88, scale:84, culture:48, career:70, cost:58 },
+    desc:'务实、好吃、湿热。不讲究排场，讲究划不划算。' },
+  { name:'长沙', tag:'消费不高，夜晚很长',
+    v:{ pace:56, climate:72, scale:60, culture:44, career:48, cost:24 },
+    desc:'娱乐和服务业发达，夜宵文化重，住得起的城市里少见的热闹。夏天很热。' },
+  { name:'重庆', tag:'地形把生活拧成三维',
+    v:{ pace:58, climate:74, scale:74, culture:42, career:50, cost:22 },
+    desc:'坡多、桥多、烟火气足，成本友好。湿热和迷宫一样的路，是它的一部分。' },
+  { name:'西安', tag:'厚重历史和低成本生活并存',
+    v:{ pace:48, climate:30, scale:64, culture:66, career:44, cost:26 },
+    desc:'文化资源密度高，生活成本友好，节奏不快。干燥、四季分明，风沙季要忍。' },
+  { name:'厦门', tag:'海在身边，城不大',
+    v:{ pace:34, climate:80, scale:44, culture:70, career:38, cost:60 },
+    desc:'岛内不大，走两步就是海。文艺气质明显，机会少，成本不低。' },
+  { name:'青岛', tag:'夏天最像度假的北方城市',
+    v:{ pace:40, climate:34, scale:54, culture:56, career:44, cost:48 },
+    desc:'海风、坡路、啤酒。夏天舒服，冬天湿冷，节奏偏慢。' },
+  { name:'昆明', tag:'气候几乎不用你操心',
+    v:{ pace:26, climate:70, scale:50, culture:52, career:34, cost:30 },
+    desc:'四季如春，日照足。节奏慢，海拔略高，职业机会相对少。' },
+  { name:'大理', tag:'用极低消耗换极大的自由',
+    v:{ pace:12, climate:66, scale:14, culture:76, career:18, cost:16 },
+    desc:'苍山洱海，候鸟式生活。适合阶段性停留，不适合所有人长期待着。' },
+  { name:'苏州', tag:'精致、克制、离上海很近',
+    v:{ pace:50, climate:62, scale:60, culture:72, career:62, cost:56 },
+    desc:'园林和制造业同时存在，城市管理细。梅雨和旺季人流是常态。' }
+];
+
+/* ========================= 引擎 ========================= */
+
+const CITY_STATS = (() => {
+  const avg = a => a.reduce((s, x) => s + x, 0) / a.length;
+  const dev = a => { const m = avg(a); return Math.sqrt(avg(a.map(x => (x - m) ** 2))) || 1; };
+  const M = {}, S = {}, MIN = {}, MAX = {};
+  DIMS.forEach(d => {
+    const v = CITIES.map(c => c.v[d]);
+    M[d] = avg(v); S[d] = dev(v);
+    MIN[d] = Math.min.apply(null, v); MAX[d] = Math.max.apply(null, v);
+  });
+  return { M, S, MIN, MAX };
+})();
+
+const state = { i: 0, answers: new Array(QUESTIONS.length).fill(null) };
+
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+  const el = $(id);
+  el.classList.add('on');
+  el.classList.remove('fade');
+  void el.offsetWidth;
+  el.classList.add('fade');
+  window.scrollTo(0, 0);
+}
+
+$('q-total').textContent = QUESTIONS.length;
+
+function renderQuestion(){
+  const q = QUESTIONS[state.i];
+  $('q-cur').textContent = state.i + 1;
+  $('q-bar').style.width = ((state.i) / QUESTIONS.length * 100) + '%';
+  $('q-title').textContent = q.t;
+  const box = $('q-opts');
+  box.innerHTML = '';
+  q.options.forEach((o, idx) => {
+    const b = document.createElement('button');
+    b.className = 'opt' + (state.answers[state.i] === idx ? ' sel' : '');
+    b.innerHTML = '<span class="k">' + 'ABCD'[idx] + '</span><span>' + o.t + '</span>';
+    b.onclick = () => pick(idx);
+    box.appendChild(b);
+  });
+  $('btn-back').style.visibility = state.i === 0 ? 'hidden' : 'visible';
+}
+
+function pick(idx){
+  state.answers[state.i] = idx;
+  document.querySelectorAll('.opt').forEach((el, i) => el.classList.toggle('sel', i === idx));
+  setTimeout(() => {
+    if (state.i < QUESTIONS.length - 1){ state.i++; renderQuestion(); }
+    else { renderResult(); }
+  }, 180);
+}
+
+$('btn-back').onclick = () => { if (state.i > 0){ state.i--; renderQuestion(); } };
+$('btn-start').onclick = () => { state.i = 0; state.answers.fill(null); show('s-quiz'); renderQuestion(); };
+
+function scoreUser(){
+  const raw = {}, cnt = {};
+  DIMS.forEach(d => { raw[d] = 0; cnt[d] = 0; });
+  state.answers.forEach((ai, qi) => {
+    if (ai === null) return;
+    const s = QUESTIONS[qi].options[ai].s;
+    for (const k in s){
+      raw[k] += s[k];
+      if (s[k] !== 0) cnt[k]++;
+    }
+  });
+  const out = {};
+  DIMS.forEach(d => {
+    const mean = cnt[d] ? raw[d] / cnt[d] : 0;
+    const p = clamp((mean + 2) / 4, 0, 1);
+    out[d] = Math.round(CITY_STATS.MIN[d] + p * (CITY_STATS.MAX[d] - CITY_STATS.MIN[d]));
+  });
+  return out;
+}
+
+function matchScore(u, city){
+  let sum = 0;
+  DIMS.forEach(d => {
+    const x = (u[d] - CITY_STATS.M[d]) / CITY_STATS.S[d];
+    const y = (city.v[d] - CITY_STATS.M[d]) / CITY_STATS.S[d];
+    sum += (x - y) * (x - y);
+  });
+  const dist = Math.sqrt(sum / DIMS.length);
+  return clamp(Math.round(100 - dist * 40), 45, 96);
+}
+
+function radarSVG(user, city){
+  const S = 300, C = 150, R = 104;
+  const ang = i => (-90 + i * 60) * Math.PI / 180;
+  const pt = (i, r) => [C + Math.cos(ang(i)) * r, C + Math.sin(ang(i)) * r];
+  const poly = vals => DIMS.map((d, i) => pt(i, R * vals[d] / 100).join(',')).join(' ');
+
+  let grid = '';
+  [0.25, 0.5, 0.75, 1].forEach(k => {
+    grid += '<polygon points="' + DIMS.map((d, i) => pt(i, R * k).join(',')).join(' ') +
+      '" fill="none" stroke="rgba(28,28,26,.10)" stroke-width="1"/>';
+  });
+  let axes = '', labels = '';
+  DIMS.forEach((d, i) => {
+    const [x, y] = pt(i, R);
+    axes += '<line x1="' + C + '" y1="' + C + '" x2="' + x + '" y2="' + y + '" stroke="rgba(28,28,26,.10)" stroke-width="1"/>';
+    const [lx, ly] = pt(i, R + 21);
+    const anchor = Math.abs(lx - C) < 6 ? 'middle' : (lx > C ? 'start' : 'end');
+    labels += '<text x="' + lx + '" y="' + (ly + 4) + '" text-anchor="' + anchor +
+      '" font-size="11.5" fill="#8b8a82">' + DIM_META[d].label + '</text>';
+  });
+
+  return '<svg viewBox="0 0 300 300" width="100%" style="max-width:300px" role="img" aria-label="六维匹配雷达图">' +
+    grid + axes +
+    '<polygon points="' + poly(city.v) + '" fill="none" stroke="#1f4b3f" stroke-width="1.2" stroke-dasharray="4 3" opacity=".45"/>' +
+    '<polygon points="' + poly(user) + '" fill="rgba(31,75,63,.14)" stroke="#1f4b3f" stroke-width="1.8" stroke-linejoin="round"/>' +
+    labels + '</svg>';
+}
+
+function reasonFor(d, userVal, city, i){
+  const m = DIM_META[d], p = DIM_PHRASE[d];
+  const mid = CITY_STATS.M[d];
+  const you = userVal >= mid ? p.hi : p.lo;
+  const gap = Math.abs(userVal - city.v[d]);
+  if (Math.abs(userVal - mid) < 6) {
+    const neutral = [
+      '你在' + m.label + '上不太挑，' + city.name + '这一项也不会拖你后腿。',
+      m.label + '对你不算关键，' + city.name + '在这一项上给得中规中矩。'
+    ];
+    return neutral[i % neutral.length];
+  }
+  if (gap > 12) {
+    return '「' + m.label + '」这一项你们差得远：你要的是' + you + '，它偏另一头。';
+  }
+  const lines = [
+    '你的' + m.label + '是「' + you + '」，' + city.name + '也是——这一项几乎不用妥协。',
+    m.label + '上你们指向同一端：' + you + '，它正好也是。',
+    '还有' + m.label + '——' + you + '，它也没跟你拧着来。'
+  ];
+  return lines[i % lines.length];
+}
+
+function renderResult(){
+  const u = scoreUser();
+  const ranked = CITIES.map(c => ({ c, m: matchScore(u, c) })).sort((a, b) => b.m - a.m);
+  const top = ranked[0], alts = ranked.slice(1, 3);
+  const pool = ranked.slice(3, 9).length ? ranked.slice(3, 9) : ranked.slice(-2);
+  const worst = pool.map(x => {
+    const g = DIMS.map(d => ({ d, gap: Math.abs(u[d] - x.c.v[d]) })).sort((a, b) => b.gap - a.gap)[0];
+    return { city: x.c, m: x.m, dim: g.d, gap: g.gap };
+  }).sort((a, b) => b.gap - a.gap)[0];
+
+  const gaps = DIMS
+    .map(d => ({ d, gap: Math.abs(u[d] - top.c.v[d]), flat: Math.abs(u[d] - CITY_STATS.M[d]) < 6 }))
+    .sort((a, b) => (a.flat - b.flat) || (a.gap - b.gap));
+  const fit = gaps.slice(0, 3);
+
+  const whyHTML = fit.map((f, i) =>
+    '<div>' + reasonFor(f.d, u[f.d], top.c, i) + '</div>'
+  ).join('');
+
+  const altHTML = alts.map(a =>
+    '<div class="item"><b>' + a.c.name + '</b><span>' + a.c.tag + '</span><em>匹配度 ' + a.m + '%</em></div>'
+  ).join('');
+
+  const html =
+    '<div class="rhead">' +
+      '<div class="rlabel">你的城市匹配结果</div>' +
+      '<div class="rcity">' + top.c.name + '</div>' +
+      '<div class="rtag">' + top.c.tag + '</div>' +
+      '<div class="rscore" style="margin-top:16px"><b>' + top.m + '</b><span>% 匹配度</span></div>' +
+    '</div>' +
+
+    '<div class="card"><h3>为什么是它</h3><div class="why">' + whyHTML + '</div>' +
+      '<p style="font-size:14px;line-height:1.68;color:var(--muted);margin:16px 0 0">' + top.c.desc + '</p></div>' +
+
+    '<div class="card"><h3>你的六维画像</h3>' +
+      '<div class="radar">' + radarSVG(u, top.c) + '</div>' +
+      '<p style="font-size:11.5px;color:var(--faint);margin:8px 0 0;text-align:center">实线是你，虚线是' + top.c.name + '</p></div>' +
+
+    '<div class="card"><h3>备选两座</h3><div class="alt">' + altHTML + '</div>' +
+      '<p style="font-size:13px;color:var(--muted);line-height:1.6;margin:14px 0 0">如果' + top.c.name + '在你这里不成立（成本、距离、家人），这两个是最接近的替代解。</p></div>' +
+
+    '<div class="warn"><h3 style="font-size:13px;letter-spacing:.1em;font-weight:500;margin:0 0 14px">你最容易踩的坑</h3>' +
+      '<p>' + worst.city.name + '，' + worst.m + '%。它离你不算远，但「' +
+      DIM_META[worst.dim].label + '」这一项差得最远：你要的是' +
+      (u[worst.dim] >= CITY_STATS.M[worst.dim] ? DIM_PHRASE[worst.dim].hi : DIM_PHRASE[worst.dim].lo) +
+      '，它给不了。很多人搬过去住半年才承认这一点。</p></div>' +
+
+    '<div class="card"><h3>30 天内可以做的三件事</h3><div class="acts">' +
+      '<div>去' + top.c.name + '住三个工作日。<span style="color:var(--muted)">不是周末——周末的城市和工作的城市是两座城。</span></div>' +
+      '<div>早八点坐一次当地地铁，晚十点走一段夜路。<span style="color:var(--muted)">这两件事比任何攻略都准。</span></div>' +
+      '<div>按税后收入的 25% 算房租，在租房平台上看你能租到什么。<span style="color:var(--muted)">数字对不上，其它都是空谈。</span></div>' +
+    '</div></div>' +
+
+    '<div class="disc">本测试为趣味自测，基于 6 个主观维度与一组城市的定性画像做近似匹配，' +
+      '不是科学测评，不构成搬迁、置业或职业决策建议。城市信息为一般性描述，实际情况以你亲自到访为准。<br>' +
+      '全程不收集任何信息，所有计算都在你的设备上完成。</div>' +
+
+    '<div class="ractions"><button id="btn-retry">再测一次</button>' +
+      '<button class="solid" id="btn-copy">复制结果</button></div>';
+
+  const s = $('s-result');
+  s.innerHTML = html;
+  show('s-result');
+
+  $('btn-retry').onclick = () => { state.i = 0; state.answers.fill(null); show('s-start'); };
+
+  $('btn-copy').onclick = async () => {
+    const txt =
+      '我的城市匹配结果：' + top.c.name + '（' + top.m + '%）\n' +
+      '备选：' + alts.map(a => a.c.name).join(' / ') + '\n' +
+      '最不合的：' + worst.c.name + '\n' +
+      '—— 城市气质测试';
+    try{
+      await navigator.clipboard.writeText(txt);
+      $('btn-copy').textContent = '已复制';
+      setTimeout(() => { $('btn-copy').textContent = '复制结果'; }, 1600);
+    }catch(e){
+      $('btn-copy').textContent = '截图保存吧';
+      setTimeout(() => { $('btn-copy').textContent = '复制结果'; }, 1600);
+    }
+  };
+}
+</script>
+</body>
+</html>
